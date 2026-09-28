@@ -197,6 +197,10 @@ main{background:var(--surface);border-radius:0 16px 16px 16px;box-shadow:var(--s
 .savebar{display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
 .note{font-size:13px;color:var(--muted)}
 
+.filebar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:13.5px;color:var(--muted)}
+.filebar span{flex:1 1 260px}
+.filebar.linked{color:var(--ok)}
+.filebar[hidden]{display:none}
 .banner{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(30px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;transition:.25s;pointer-events:none;z-index:50}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -216,6 +220,7 @@ main{background:var(--surface);border-radius:0 16px 16px 16px;box-shadow:var(--s
     </div>
     <nav class="tabs" id="tabs" role="tablist" aria-label="Views"></nav>
   </header>
+  <div id="fileBanner" class="filebar" hidden></div>
   <main id="main"><div class="empty">Loading the roster…</div></main>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -242,12 +247,71 @@ function applyTheme(t){document.documentElement.setAttribute('data-theme',t);doc
 
 /* ---------- this-device storage (when not opened from Claude) ---------- */
 const DEFAULT_CONFIG={"ushers": [{"id": "u01", "name": "Abdelrahman Nagy"}, {"id": "u02", "name": "Ahmed Eid"}, {"id": "u03", "name": "Ahmed El-Hendy"}, {"id": "u04", "name": "Ahmed Kabil"}, {"id": "u05", "name": "Ahmed Nabil"}, {"id": "u06", "name": "Ahmed Shaker"}, {"id": "u07", "name": "Ali Darwish"}, {"id": "u08", "name": "Ali Ghanem"}, {"id": "u09", "name": "Aly Megahed"}, {"id": "u10", "name": "Bashar Khaled"}, {"id": "u11", "name": "Dana EL-Masry"}, {"id": "u12", "name": "Ganna Salama"}, {"id": "u13", "name": "Ghydaa Medhat"}, {"id": "u14", "name": "Habiba El-Habibi"}, {"id": "u15", "name": "Habiba Omar"}, {"id": "u16", "name": "Jana Ahmed"}, {"id": "u17", "name": "Jana Hindawy"}, {"id": "u18", "name": "Jana Reda"}, {"id": "u19", "name": "Jana Talaat"}, {"id": "u20", "name": "Jasmine Ahmed"}, {"id": "u21", "name": "Jasmine El Hadidi"}, {"id": "u22", "name": "Jolie Ehab"}, {"id": "u23", "name": "Jomana El-Gohary"}, {"id": "u24", "name": "Joudy Shady"}, {"id": "u25", "name": "Judy EL-Kassas"}, {"id": "u26", "name": "Judy Sameh"}, {"id": "u27", "name": "Karma Mohamed"}, {"id": "u28", "name": "Lara Amr"}, {"id": "u29", "name": "Layla Taher"}, {"id": "u30", "name": "Leena Elbadawy"}, {"id": "u31", "name": "Logaine Abo El-Kassem"}, {"id": "u32", "name": "Lorraine Said"}, {"id": "u33", "name": "Malak Ahmed"}, {"id": "u34", "name": "Malak Anwar"}, {"id": "u35", "name": "Mariam Gaber"}, {"id": "u36", "name": "Mariam Hesham"}, {"id": "u37", "name": "Mariam Moheeb"}, {"id": "u38", "name": "Mariam Tahan"}, {"id": "u39", "name": "Mark Takla"}, {"id": "u40", "name": "Maryam Shehata"}, {"id": "u41", "name": "Maya Darwish"}, {"id": "u42", "name": "Maya El-Metwaly"}, {"id": "u43", "name": "Menna El-Sebaay"}, {"id": "u44", "name": "Mohamed Essaily"}, {"id": "u45", "name": "Mostafa Mahmoud"}, {"id": "u46", "name": "Mostafa Mohamed"}, {"id": "u47", "name": "Nour Essam"}, {"id": "u48", "name": "Nour Khedr"}, {"id": "u49", "name": "Nour Tarek"}, {"id": "u50", "name": "Nouran Ahmed"}, {"id": "u51", "name": "Omar Amgad"}, {"id": "u52", "name": "Omar EL-Kasas"}, {"id": "u53", "name": "Omar El-Sobky"}, {"id": "u54", "name": "Omar Hamdy"}, {"id": "u55", "name": "Omar Soliman"}, {"id": "u56", "name": "Raghad Mohamed"}, {"id": "u57", "name": "Ragheed Amr"}, {"id": "u58", "name": "Rawan Radwan"}, {"id": "u59", "name": "Rawan Zanaty"}, {"id": "u60", "name": "Rinad Mohamed"}, {"id": "u61", "name": "Ritage Mohamed"}, {"id": "u62", "name": "Rofida Samy"}, {"id": "u63", "name": "Rozana EL-Nahhas"}, {"id": "u64", "name": "Rwan Amr"}, {"id": "u65", "name": "Sama Fouad"}, {"id": "u66", "name": "Sama Tamer"}, {"id": "u67", "name": "Shaden Marie"}, {"id": "u68", "name": "Shahd Mubarak"}, {"id": "u69", "name": "Tameem Wael"}, {"id": "u70", "name": "Waad Noueir"}, {"id": "u71", "name": "Yara Khaled"}, {"id": "u72", "name": "Yasmine Mahran"}, {"id": "u73", "name": "Yassin Nassar"}, {"id": "u74", "name": "Yassin Safwat"}, {"id": "u75", "name": "Zeina Farahat"}, {"id": "u76", "name": "Ziad Amr"}, {"id": "u77", "name": "Ziad Gharib"}], "roles": {"morning": ["Welcoming", "Maze Runner", "Sweeper", "Tailor", "Tracker", "ID Keeper", "Flow"], "venue": ["Kamasht 2nd March", "Kamasht Parents", "Hall Duty"], "evac": ["Navigator 1", "Navigator 2", "Scissors", "PSA", "1st Line", "2nd Line", "Maze Runner", "Tracker", "Tailor", "ID Keeper", "Flow"], "batch": ["Batch 1", "Batch 2", "Batch 3"]}, "needed": {}, "days": [{"id": "d1", "label": "Day 1"}, {"id": "d2", "label": "Day 2"}, {"id": "d3", "label": "Day 3"}]};
+/* Where the data lives when the page isn't the shared Claude link:
+   1) Claude's own storage when previewed in a Claude chat, 2) this browser's storage,
+   3) optionally a data file on this computer that updates on every change. */
 const LOCAL={
-  load(){let c=null,a={};try{c=JSON.parse(localStorage.getItem('ushers.config')||'null');a=JSON.parse(localStorage.getItem('ushers.asg')||'{}')}catch(e){}
-    return {config:c||JSON.parse(JSON.stringify(DEFAULT_CONFIG)),asg:new Map(Object.entries(a||{}))}},
-  save(){try{localStorage.setItem('ushers.config',JSON.stringify(S.config));localStorage.setItem('ushers.asg',JSON.stringify(Object.fromEntries(S.asg)));setSync('live','Saved on this device')}
-    catch(e){setSync('off','Couldn’t save on this device');toast('This browser blocked saving. Use Setup › Download backup to keep your work.')}}
+  kind:'browser', fileHandle:null, lastSaved:null, t:0,
+  hasCS(){try{return typeof window.storage?.get==='function'&&typeof window.storage?.set==='function'}catch(e){return false}},
+  async load(){
+    let c=null,a=null;
+    if(this.hasCS()){
+      this.kind='claude';
+      try{const r=await window.storage.get('ushers-config',false);c=r?JSON.parse(r.value):null}catch(e){}
+      try{const r=await window.storage.get('ushers-asg',false);a=r?JSON.parse(r.value):null}catch(e){}
+    }
+    if(!c){try{c=JSON.parse(localStorage.getItem('ushers.config')||'null');a=JSON.parse(localStorage.getItem('ushers.asg')||'null')}catch(e){}}
+    try{navigator.storage?.persist?.()}catch(e){}
+    return {config:c||JSON.parse(JSON.stringify(DEFAULT_CONFIG)),asg:new Map(Object.entries(a||{}))};
+  },
+  save(){ setSync('busy','Saving…'); clearTimeout(this.t); this.t=setTimeout(()=>this.flush(),250) },
+  async flush(){
+    const cfg=JSON.stringify(S.config), asg=JSON.stringify(Object.fromEntries(S.asg));
+    let ok=false, where='';
+    if(this.kind==='claude'){
+      try{const a=await window.storage.set('ushers-config',cfg,false);const b=await window.storage.set('ushers-asg',asg,false);ok=!!(a&&b);where='in Claude'}catch(e){}
+    }
+    try{localStorage.setItem('ushers.config',cfg);localStorage.setItem('ushers.asg',asg);if(!ok){ok=true;where='in this browser'}}catch(e){}
+    if(this.fileHandle){
+      try{const w=await this.fileHandle.createWritable();await w.write(JSON.stringify({config:S.config,assignments:Object.fromEntries(S.asg),savedAt:new Date().toISOString()},null,1));await w.close();ok=true;where='to '+this.fileHandle.name}
+      catch(e){this.fileHandle=null;fileUI();toast('Lost access to the data file. Link it again in Setup.')}
+    }
+    const time=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    if(ok){this.lastSaved=time;setSync('live',`Saved ${where}, ${time}`)}
+    else{setSync('off','Not saved');toast('This browser blocked saving. Use Setup › Download backup to keep your work.')}
+  }
 };
+/* data file on this computer (Chrome and Edge) */
+const canFile=()=>typeof window.showSaveFilePicker==='function'&&window.self===window.top;
+const idb=(mode,fn)=>new Promise((res,rej)=>{const o=indexedDB.open('ushers-roles',1);o.onupgradeneeded=()=>o.result.createObjectStore('kv');o.onerror=()=>rej(o.error);o.onsuccess=()=>{const tx=o.result.transaction('kv',mode);const r=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(r&&r.result);tx.onerror=()=>rej(tx.error)}});
+async function rememberHandle(h){try{await idb('readwrite',st=>st.put(h,'file'))}catch(e){}}
+async function storedHandle(){try{return await idb('readonly',st=>st.get('file'))}catch(e){return null}}
+async function linkNewFile(){
+  try{const h=await window.showSaveFilePicker({suggestedName:'ushers-roles-data.json',types:[{description:'Ushers roles data',accept:{'application/json':['.json']}}]});
+    LOCAL.fileHandle=h; await rememberHandle(h); await LOCAL.flush(); fileUI(); toast('Every change now saves to '+h.name)}catch(e){}
+}
+async function openFile(){
+  try{const [h]=await window.showOpenFilePicker({types:[{description:'Ushers roles data',accept:{'application/json':['.json']}}]});
+    const j=JSON.parse(await (await h.getFile()).text()); if(!j.config||!j.assignments) throw 0;
+    if((await h.requestPermission({mode:'readwrite'}))!=='granted') throw 0;
+    S.config=j.config; S.asg=new Map(Object.entries(j.assignments)); LOCAL.fileHandle=h; await rememberHandle(h);
+    await LOCAL.flush(); fileUI(); render(); toast('Opened '+h.name)}catch(e){ if(e&&e.name!=='AbortError') toast('That file isn’t an ushers roles data file.') }
+}
+async function reconnectFile(h){
+  try{if((await h.requestPermission({mode:'readwrite'}))!=='granted') return;
+    const j=JSON.parse(await (await h.getFile()).text());
+    if(j.config&&j.assignments&&j.savedAt){S.config=j.config;S.asg=new Map(Object.entries(j.assignments))}
+    LOCAL.fileHandle=h; await LOCAL.flush(); fileUI(); render(); toast('Reconnected to '+h.name)}catch(e){toast('Couldn’t open the data file. Link it again in Setup.')}
+}
+function fileUI(){
+  const b=document.getElementById('fileBanner'); if(!b) return;
+  b.replaceChildren();
+  if(S.db||!canFile()) {b.hidden=true;return}
+  b.hidden=false;
+  if(LOCAL.fileHandle){b.className='filebar linked';b.append(el('span',{text:`Also saving to ${LOCAL.fileHandle.name} on this computer.`}))}
+  else if(LOCAL.pendingHandle){b.className='filebar';b.append(el('span',{text:`Your data file ${LOCAL.pendingHandle.name} isn’t connected yet.`}),el('button',{class:'btn',onclick:()=>{const h=LOCAL.pendingHandle;LOCAL.pendingHandle=null;reconnectFile(h)}},'Reconnect file'))}
+  else{b.className='filebar';b.append(el('span',{text:'Saved in this browser. For a copy that can’t be wiped, save to a file on your computer.'}),el('button',{class:'btn',onclick:linkNewFile},'Save to a file'),el('button',{class:'btn',onclick:openFile},'Open a data file'))}
+}
 function downloadText(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 
 /* ---------- data helpers ---------- */
@@ -552,13 +616,16 @@ let rafT=0; function scheduleRefresh(){cancelAnimationFrame(rafT);rafT=requestAn
   if(dayDom&&dayDom.d===S.view) refreshDay(); else if(S.view==='find'){renderTabs();drawBadges()} else if(S.view==='team') {renderTabs();renderTeam()} else renderTabs();
 })}
 
+window.addEventListener('pagehide',()=>{if(!S.db&&LOCAL.t){clearTimeout(LOCAL.t);try{localStorage.setItem('ushers.config',JSON.stringify(S.config));localStorage.setItem('ushers.asg',JSON.stringify(Object.fromEntries(S.asg)))}catch(e){}}});
 /* ---------- boot ---------- */
 (async()=>{
-  const startLocal=()=>{const l=LOCAL.load();S.config=l.config;S.asg=l.asg;S.configExists=true;setSync('live','Saved on this device');render()};
-  if(!window.claude||!window.claude.use){startLocal();return}
+  const startLocal=async()=>{const l=await LOCAL.load();S.config=l.config;S.asg=l.asg;S.configExists=true;
+    setSync('live',LOCAL.kind==='claude'?'Saved in Claude':'Saved in this browser');render();
+    if(canFile()){const h=await storedHandle(); if(h){ try{ if((await h.queryPermission({mode:'readwrite'}))==='granted'){await reconnectFile(h)} else LOCAL.pendingHandle=h }catch(e){} } fileUI()}};
+  if(!window.claude||!window.claude.use){await startLocal();return}
   const [db,user,dl]=await Promise.all([claude.use('db'),claude.use('user'),claude.use('downloads')]);
   S.dl=dl;
-  if(!db){startLocal();return}
+  if(!db){await startLocal();return}
   S.db=db;
   if(user){const w=await user.can('data.write');if(w===false)S.canWrite=false}
   let firstCfg=true;
